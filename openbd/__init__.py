@@ -1,11 +1,7 @@
+import json
 import sys
 from collections import namedtuple
-
-import requests
-
-# see pyproject.toml
-__version__ = "0.0.3"
-__author__ = "Saito Tsutomu <tsutomu7@hotmail.co.jp>"
+from urllib.request import URLError, urlopen
 
 
 def get(dc, path):
@@ -60,10 +56,11 @@ def get_price(data, key1, key2, key3):
 
 
 def book_info(isbn, has_data=False, dup=False):
-    _req = requests.get("https://api.openbd.jp/v1/get?isbn=" + isbn)
-    if _req.status_code != 200:
+    try:
+        with urlopen("https://api.openbd.jp/v1/get?isbn=" + isbn) as fp:
+            data = json.load(fp)
+    except URLError:
         return None
-    data = _req.json()
     onix = get(data, "#0/onix")
     isbn_ = get(onix, "RecordReference")
     _desc = get(onix, "DescriptiveDetail")
@@ -76,9 +73,7 @@ def book_info(isbn, has_data=False, dup=False):
     _pub = get(onix, "PublishingDetail")
     publish = get_publish(_pub, "Imprint/ImprintName", "Publisher/PublisherName", dup)
     date = get_date(get(_pub, "PublishingDate/#0/Date"))
-    price = get_price(
-        onix, "ProductSupply/SupplyDetail/Price/#0", "PriceAmount", "CurrencyCode"
-    )
+    price = get_price(onix, "ProductSupply/SupplyDetail/Price/#0", "PriceAmount", "CurrencyCode")
     page = get(_desc, "Extent/#0/ExtentValue")
     size = _dcs.get(get(_desc, "ProductFormDetail"))
     _det = get(onix, "CollateralDetail")
@@ -132,9 +127,7 @@ _dcs = {
     "B129": "菊変形",
     "B130": "B4判",
 }
-_names = (
-    "isbn title subtitle series authors publish date price page size content image data"
-)
+_names = "isbn title subtitle series authors publish date price page size content image data"
 BookInfo = namedtuple("BookInfo", _names.split())
 
 
