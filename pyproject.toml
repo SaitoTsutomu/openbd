@@ -31,3 +31,15 @@ pytest = "^7.1"
 [build-system]
 build-backend = "poetry.core.masonry.api"
 requires = ["poetry-core>=1.0.0"]
+
+[tool.pytest.ini_options]
+addopts = [
+  "--strict-markers", # マーカースペルミス対応
+  "--strict-config", # 設定ミス対応
+  "-ra", # サマリー表示
+  "-v", # 詳細表示
+  "-x", # 失敗時に終了
+  "--capture=no", # 標準出力表示
+]
+
+testpaths = "tests"
