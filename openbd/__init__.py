@@ -26,8 +26,10 @@ def drop_none(iterable, func=None, *args, **kwargs):
 def get_person(data, key2, key3):
     name = get(data, key2)
     roles = get(data, key3)
-    if not name or not roles:
+    if not name:
         return
+    if not roles:
+        return name
     role = "・".join(drop_none(map(_dcp.get, roles)))
     return f"{name}／{role}"
 
